@@ -1,0 +1,24 @@
+@model BlogYonetimPaneli.Models.Post
+
+@{
+    ViewData["Title"] = "Yazı Sil";
+}
+
+<h1>Yazı Sil</h1>
+
+<h3>Bu yazıyı silmek istediğine emin misin?</h3>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Başlık</dt>
+        <dd class="col-sm-10">@Model.Title</dd>
+
+        <dt class="col-sm-2">Kategori</dt>
+        <dd class="col-sm-10">@Model.Category?.Name</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Sil" class="btn btn-danger" /> |
+        <a asp-action="Index">İptal</a>
+    </form>
+</div>

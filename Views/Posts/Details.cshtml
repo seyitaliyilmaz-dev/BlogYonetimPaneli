@@ -1,0 +1,29 @@
+@using BlogYonetimPaneli.Helpers
+@model BlogYonetimPaneli.Models.Post
+
+@{
+    ViewData["Title"] = "Yazı Detay";
+}
+
+<h1>@Model.Title</h1>
+
+<p>
+    <strong>Kategori:</strong> @Model.Category?.Name <br />
+    <strong>Oluşturulma:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm") <br />
+    @if (Model.UpdatedAt != null)
+    {
+        <text><strong>Güncellenme:</strong> @Model.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm") <br /></text>
+    }
+    <strong>Durum:</strong> @(Model.IsPublished ? "Yayınlandı" : "Taslak")
+</p>
+
+<hr />
+
+<div>
+    @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
+</div>
+
+<hr />
+
+<a asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a> |
+<a asp-action="Index">Listeye Dön</a>

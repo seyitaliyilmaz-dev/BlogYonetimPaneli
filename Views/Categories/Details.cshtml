@@ -1,0 +1,28 @@
+@model BlogYonetimPaneli.Models.Category
+
+@{
+    ViewData["Title"] = "Kategori Detay";
+}
+
+<h1>Kategori Detay</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Ad</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+
+        <dt class="col-sm-2">Açıklama</dt>
+        <dd class="col-sm-10">@Model.Description</dd>
+    </dl>
+</div>
+
+<h4>Bu Kategorideki Yazılar</h4>
+<ul>
+@foreach (var post in Model.Posts)
+{
+    <li>@post.Title</li>
+}
+</ul>
+
+<a asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a> |
+<a asp-action="Index">Listeye Dön</a>
