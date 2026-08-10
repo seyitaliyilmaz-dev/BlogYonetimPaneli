@@ -1,8 +1,13 @@
-namespace BlogYonetimPaneli.Models;
-
-public class ErrorViewModel
+namespace BlogYonetimPaneli.Models
 {
-    public string? RequestId { get; set; }
+    // Hata sayfasında gösterilecek isteğe bağlı bilgiyi taşıyan basit view model.
+    public class ErrorViewModel
+    {
+        // Hangi HTTP isteğinin hataya sebep olduğunu belirten kimlik.
+        public string? RequestId { get; set; }
 
-    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+        // RequestId doluysa true döner; view'da "Request ID: ..." satırının
+        // gösterilip gösterilmeyeceğine bu karar verir.
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    }
 }

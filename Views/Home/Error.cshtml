@@ -1,0 +1,24 @@
+@* Beklenmeyen hatalarda gösterilen genel hata sayfası. *@
+@model BlogYonetimPaneli.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Hata";
+}
+
+<h1 class="text-danger">Hata.</h1>
+<h2 class="text-danger">İsteği işlerken bir hata oluştu.</h2>
+
+@* ShowRequestId true ise (yani RequestId doluysa) istek kimliği gösterilir. *@
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>Development Ortamı</h3>
+<p>
+    Development ortamına geçmek hassas hata bilgilerinin uygulamayı kullanan kişilere
+    gösterilmesine sebep olabileceğinden tehlikeli olabilir. Development ortamı yerel
+    makinede çalışırken potansiyel olarak güvenli olabilir, ancak canlıda (production)
+    her zaman devre dışı bırakılmalıdır.
+</p>
