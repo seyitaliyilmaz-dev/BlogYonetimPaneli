@@ -1,14 +1,16 @@
+@* Yeni kategori eklemek için kullanılan form. *@
 @model BlogYonetimPaneli.Models.Category
 
 @{
     ViewData["Title"] = "Yeni Kategori";
 }
 
-<h1>Yeni Kategori</h1>
-
+@* asp-action="Create" formu CategoriesController'daki POST Create metoduna gönderir. *@
 <form asp-action="Create">
+    @* Model doğrulama (validation) hatalarının genel özetini gösterir. *@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-group">
+        @* asp-for, Category.Name alanına bağlı bir <label> ve <input> üretir. *@
         <label asp-for="Name" class="control-label"></label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>

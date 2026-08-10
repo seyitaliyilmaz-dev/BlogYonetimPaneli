@@ -1,8 +1,26 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@* Uygulamanın karşılama (anasayfa) ekranı. *@
+@{
+    ViewData["Title"] = "Anasayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div style="max-width: 640px;">
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; color:#B98B2A;">
+        Blog Yönetim Paneli
+    </p>
+
+    <h2 style="font-family:'Source Serif 4',serif; font-size:1.6rem; margin-top:0.25rem;">
+        Yazılarını düzenle, kategorilere ayır, yayınla.
+    </h2>
+
+    <p style="color:#35455A; line-height:1.6;">
+        Bu panel üzerinden blog yazılarını oluşturabilir, Markdown ile biçimlendirebilir,
+        kategorilere ayırabilir ve yayın durumlarını yönetebilirsin. Yazı ve kategori
+        eklemek için giriş yapmış olman gerekir.
+    </p>
+
+    @* Yazılar ve Kategoriler sayfalarına hızlı erişim butonları *@
+    <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+        <a asp-controller="Posts" asp-action="Index" class="btn btn-primary">Yazılara Git</a>
+        <a asp-controller="Categories" asp-action="Index" class="btn" style="border-color:#202B38; color:#202B38;">Kategorilere Git</a>
+    </div>
 </div>

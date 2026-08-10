@@ -1,13 +1,14 @@
+@* Var olan bir blog yazısını düzenlemek için kullanılan form. *@
 @model BlogYonetimPaneli.Models.Post
 
 @{
     ViewData["Title"] = "Yazı Düzenle";
 }
 
-<h1>Yazı Düzenle</h1>
-
 <form asp-action="Edit">
     <input type="hidden" asp-for="Id" />
+    @* CreatedAt formda görünmez ama gizli alan olarak gönderilir, böylece
+       güncelleme sırasında ilk oluşturulma tarihi kaybolmaz. *@
     <input type="hidden" asp-for="CreatedAt" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

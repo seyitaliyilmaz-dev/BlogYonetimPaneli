@@ -1,3 +1,5 @@
+@* Tüm sayfaların ortak iskeleti (kenar çubuğu + içerik alanı). RenderBody()
+   çağrıldığı noktaya, her sayfanın kendi içeriği (View) yerleşir. *@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -5,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Blog Yönetim Paneli</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    @* site.css, Bootstrap'in varsayılan görünümünü özelleştirilmiş tasarımla eziyor. *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -16,12 +19,15 @@
                 <a asp-controller="Posts" asp-action="Index">Yazılar</a>
                 <a asp-controller="Categories" asp-action="Index">Kategoriler</a>
 
+                @* User.Identity.IsAuthenticated, kullanıcının giriş yapıp yapmadığını kontrol eder.
+                   Girişliyse e-posta + Çıkış Yap, değilse Giriş Yap linki gösterilir. *@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.15);">
                         <div style="font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:rgba(237,238,230,0.6); padding:0 0.5rem 0.5rem;">
                             @User.Identity.Name
                         </div>
+                        @* Çıkış işlemi güvenlik gereği POST ile yapılır (basit bir <a> linkiyle değil). *@
                         <form asp-controller="Account" asp-action="Logout" method="post">
                             <button type="submit" style="background:none; border:none; padding:0.65rem 0.5rem; width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; color:rgba(237,238,230,0.75); cursor:pointer;">
                                 Çıkış Yap
@@ -44,6 +50,7 @@
                 </div>
             </div>
 
+            @* Her sayfanın kendine özgü içeriği burada render edilir. *@
             @RenderBody()
         </main>
     </div>
@@ -51,6 +58,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Sayfaya özel ek script'ler için (örn. doğrulama script'leri) ayrılmış bölüm. *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

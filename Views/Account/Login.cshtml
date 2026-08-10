@@ -1,3 +1,4 @@
+@* Kullanıcı giriş formu. *@
 @model BlogYonetimPaneli.Models.LoginViewModel
 
 @{
@@ -5,6 +6,8 @@
 }
 
 <div style="max-width: 400px;">
+    @* returnUrl, korumalı bir sayfadan buraya yönlendirildiyse, giriş sonrası
+       kullanıcıyı o sayfaya geri götürmek için AccountController'a gönderilir. *@
     <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

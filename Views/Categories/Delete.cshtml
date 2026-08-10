@@ -1,10 +1,9 @@
+@* Silme işlemi öncesi kullanıcıdan onay almak için gösterilen sayfa. *@
 @model BlogYonetimPaneli.Models.Category
 
 @{
     ViewData["Title"] = "Kategori Sil";
 }
-
-<h1>Kategori Sil</h1>
 
 <h3>Bu kategoriyi silmek istediğine emin misin?</h3>
 <div>
@@ -16,6 +15,7 @@
         <dd class="col-sm-10">@Model.Description</dd>
     </dl>
 
+    @* Bu form gönderildiğinde CategoriesController'daki DeleteConfirmed metodu çalışır. *@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Sil" class="btn btn-danger" /> |

@@ -1,3 +1,4 @@
+@* Tek bir yazının tam içeriğini gösterir. Markdown -> HTML dönüşümü burada yapılır. *@
 @using BlogYonetimPaneli.Helpers
 @model BlogYonetimPaneli.Models.Post
 
@@ -10,6 +11,7 @@
 <p>
     <strong>Kategori:</strong> @Model.Category?.Name <br />
     <strong>Oluşturulma:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm") <br />
+    @* UpdatedAt sadece yazı en az bir kez düzenlendiyse gösterilir. *@
     @if (Model.UpdatedAt != null)
     {
         <text><strong>Güncellenme:</strong> @Model.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm") <br /></text>
@@ -20,6 +22,8 @@
 <hr />
 
 <div>
+    @* MarkdownHelper.ToHtml, veritabanındaki Markdown metnini HTML'e çevirir.
+       Html.Raw, bu HTML'in kaçışlanmadan (escape edilmeden) doğrudan sayfaya basılmasını sağlar. *@
     @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
 </div>
 

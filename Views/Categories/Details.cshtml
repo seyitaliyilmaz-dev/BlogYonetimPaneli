@@ -1,10 +1,9 @@
+@* Tek bir kategorinin bilgilerini ve o kategoriye ait yazıları gösterir. *@
 @model BlogYonetimPaneli.Models.Category
 
 @{
     ViewData["Title"] = "Kategori Detay";
 }
-
-<h1>Kategori Detay</h1>
 
 <div>
     <dl class="row">
@@ -16,6 +15,7 @@
     </dl>
 </div>
 
+@* Model.Posts, controller'da Include(c => c.Posts) ile birlikte yüklendiği için burada kullanılabilir. *@
 <h4>Bu Kategorideki Yazılar</h4>
 <ul>
 @foreach (var post in Model.Posts)

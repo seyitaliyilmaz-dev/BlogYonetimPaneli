@@ -1,3 +1,4 @@
+@* Tüm blog yazılarını, kategorileriyle ve yayın durumlarıyla birlikte listeler. *@
 @model IEnumerable<BlogYonetimPaneli.Models.Post>
 
 @{
@@ -23,8 +24,10 @@
 {
         <tr>
             <td>@item.Title</td>
+            @* item.Category, PostsController'da Include(p => p.Category) ile yüklendiği için burada doludur. *@
             <td>@item.Category?.Name</td>
             <td>
+                @* IsPublished durumuna göre farklı bir "damga" rozeti gösterilir. *@
                 @if (item.IsPublished)
                 {
                     <span class="stamp stamp--live">Yayında</span>

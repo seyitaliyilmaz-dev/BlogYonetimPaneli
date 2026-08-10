@@ -1,10 +1,9 @@
+@* Yeni blog yazısı oluşturmak için kullanılan form. *@
 @model BlogYonetimPaneli.Models.Post
 
 @{
     ViewData["Title"] = "Yeni Yazı";
 }
-
-<h1>Yeni Yazı</h1>
 
 <form asp-action="Create">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -16,6 +15,7 @@
     </div>
 
     <div class="form-group">
+        @* ViewBag.CategoryId, controller'da SelectList olarak hazırlanan kategori listesidir. *@
         <label asp-for="CategoryId" class="control-label">Kategori</label>
         <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
             <option value="">-- Kategori Seçin --</option>
@@ -24,6 +24,8 @@
     </div>
 
     <div class="form-group">
+        @* İçerik burada düz metin olarak girilir; Markdown sözdizimi
+           (örn. **kalın**, # başlık) desteklenir ve Details sayfasında render edilir. *@
         <label asp-for="Content" class="control-label">İçerik (Markdown desteklenir)</label>
         <textarea asp-for="Content" class="form-control" rows="12"></textarea>
         <span asp-validation-for="Content" class="text-danger"></span>

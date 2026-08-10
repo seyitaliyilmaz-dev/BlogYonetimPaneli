@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BlogYonetimPaneli.Models
 {
+    // Kayıt (Register) formundan gelen verileri taşıyan view model.
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "E-posta zorunludur.")]
@@ -13,6 +14,7 @@ namespace BlogYonetimPaneli.Models
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
+        // Password alanıyla aynı olup olmadığı [Compare] ile otomatik kontrol edilir.
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Şifreler eşleşmiyor.")]
         public string ConfirmPassword { get; set; } = string.Empty;
