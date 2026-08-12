@@ -7,8 +7,6 @@
 
 <form asp-action="Edit">
     <input type="hidden" asp-for="Id" />
-    @* CreatedAt formda görünmez ama gizli alan olarak gönderilir, böylece
-       güncelleme sırasında ilk oluşturulma tarihi kaybolmaz. *@
     <input type="hidden" asp-for="CreatedAt" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -19,11 +17,14 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="CategoryId" class="control-label">Kategori</label>
-        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
-            <option value="">-- Kategori Seçin --</option>
-        </select>
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
+        <label for="categoryName" class="control-label">Kategori</label>
+        <input type="text" id="categoryName" name="categoryName" class="form-control"
+               autocomplete="off" placeholder="Örn: Siyaset, Teknoloji, Spor"
+               value="@ViewData["CategoryName"]" />
+        @if (ViewData["CategoryError"] != null)
+        {
+            <span class="text-danger">@ViewData["CategoryError"]</span>
+        }
     </div>
 
     <div class="form-group">

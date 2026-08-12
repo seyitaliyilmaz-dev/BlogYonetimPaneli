@@ -1,38 +1,49 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BlogYonetimPaneli.Data;
 using BlogYonetimPaneli.Models;
 
 namespace BlogYonetimPaneli.Controllers
 {
-    // Blog yazılarıyla ilgili tüm CRUD işlemlerini yöneten controller.
-    // Sınıfın tamamı [Authorize] ile korunur; Index ve Details herkese açık.
     [Authorize]
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        // Giriş yapmış kullanıcının kimliğine (Id, rol vb.) erişmek için eklendi.
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public PostsController(ApplicationDbContext context)
+        public PostsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Posts
-        // Tüm yazıları, kategorileriyle birlikte en yeniden eskiye sıralı listeler.
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var posts = await _context.Posts
-                .Include(p => p.Category)       // İlişkili kategori bilgisini de getirir
+                .Include(p => p.Category)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+
+            // "Oluşturan" sütununda e-posta gösterebilmek için, yazılardaki
+            // AuthorId'lere karşılık gelen kullanıcılar tek seferde çekiliyor.
+            var authorIds = posts.Select(p => p.AuthorId).Where(id => id != null).Distinct().ToList();
+            var authors = await _context.Users
+                .Where(u => authorIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.Email);
+            ViewData["Authors"] = authors;
+
+            // View'da "bu benim yazım mı" kontrolü yapabilmek için mevcut kullanıcının Id'si gönderiliyor.
+            ViewData["CurrentUserId"] = _userManager.GetUserId(User);
+
             return View(posts);
         }
 
         // GET: Posts/Details/5
-        // Tek bir yazının detayını gösterir; içerik burada Markdown'dan HTML'e çevrilir.
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
@@ -44,62 +55,131 @@ namespace BlogYonetimPaneli.Controllers
 
             if (post == null) return NotFound();
 
+            // Yazar e-postasını gösterebilmek için ayrıca sorgulanıyor.
+            if (post.AuthorId != null)
+            {
+                var author = await _context.Users.FirstOrDefaultAsync(u => u.Id == post.AuthorId);
+                ViewData["AuthorEmail"] = author?.Email;
+            }
+
+            ViewData["CurrentUserId"] = _userManager.GetUserId(User);
+
             return View(post);
         }
 
         // GET: Posts/Create
-        // Yeni yazı formunu, kategori seçim listesiyle birlikte hazırlar.
         public IActionResult Create()
         {
-            // SelectList, Category tablosundaki kayıtları <select> elemanına dönüştürür.
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
         // POST: Posts/Create
-        // Formdan gelen yeni yazıyı doğrular ve kaydeder.
+        // categoryName: kullanıcının serbestçe yazdığı kategori adı.
+        // Aynı isimde kategori zaten varsa o kullanılır, yoksa otomatik oluşturulur.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Content,CategoryId,IsPublished")] Post post)
+        public async Task<IActionResult> Create([Bind("Title,Content,IsPublished")] Post post, string categoryName)
         {
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                ViewData["CategoryError"] = "Kategori adı zorunludur.";
+                ViewData["CategoryName"] = categoryName;
+                return View(post);
+            }
+
             if (ModelState.IsValid)
             {
-                post.CreatedAt = DateTime.Now; // Oluşturulma tarihi sunucu tarafında set edilir
+                var trimmedName = categoryName.Trim();
+
+                // Büyük/küçük harf farkı gözetmeden var olan kategori aranır.
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Name.ToLower() == trimmedName.ToLower());
+
+                if (category == null)
+                {
+                    category = new Category { Name = trimmedName };
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync(); // Id'sinin oluşması için önce kaydedilir
+                }
+
+                post.CategoryId = category.Id;
+                post.CreatedAt = DateTime.Now;
+                // Yazının sahibi, o an giriş yapmış kullanıcı olarak kaydediliyor.
+                post.AuthorId = _userManager.GetUserId(User);
+
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            // Doğrulama hatası varsa, kategori listesi tekrar doldurulup form yeniden gösterilir.
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", post.CategoryId);
+
+            ViewData["CategoryName"] = categoryName;
             return View(post);
         }
 
         // GET: Posts/Edit/5
-        // Düzenlenecek yazıyı bulup formu, seçili kategoriyle birlikte doldurur.
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id);
             if (post == null) return NotFound();
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", post.CategoryId);
+            // Sadece yazının sahibi ya da Admin rolündeki kullanıcı düzenleyebilir.
+            var currentUserId = _userManager.GetUserId(User);
+            if (post.AuthorId != currentUserId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
+            ViewData["CategoryName"] = post.Category?.Name;
             return View(post);
         }
 
         // POST: Posts/Edit/5
-        // Güncellenmiş yazı verisini kaydeder.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Content,CategoryId,IsPublished,CreatedAt")] Post post)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Content,IsPublished,CreatedAt,AuthorId")] Post post, string categoryName)
         {
             if (id != post.Id) return NotFound();
 
+            // Veritabanındaki gerçek kaydı çekip sahiplik kontrolünü buradan yapıyoruz
+            // (formdan gelen AuthorId'ye güvenmek güvenlik açığı olurdu).
+            var existingPost = await _context.Posts.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            if (existingPost == null) return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+            if (existingPost.AuthorId != currentUserId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                ViewData["CategoryError"] = "Kategori adı zorunludur.";
+                ViewData["CategoryName"] = categoryName;
+                return View(post);
+            }
+
             if (ModelState.IsValid)
             {
+                var trimmedName = categoryName.Trim();
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Name.ToLower() == trimmedName.ToLower());
+
+                if (category == null)
+                {
+                    category = new Category { Name = trimmedName };
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
+                }
+
+                post.CategoryId = category.Id;
+                // Orijinal yazarın değişmemesi için veritabanındaki değer korunur.
+                post.AuthorId = existingPost.AuthorId;
+
                 try
                 {
-                    post.UpdatedAt = DateTime.Now; // Güncellenme tarihi burada set edilir
+                    post.UpdatedAt = DateTime.Now;
                     _context.Update(post);
                     await _context.SaveChangesAsync();
                 }
@@ -112,12 +192,12 @@ namespace BlogYonetimPaneli.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", post.CategoryId);
+
+            ViewData["CategoryName"] = categoryName;
             return View(post);
         }
 
         // GET: Posts/Delete/5
-        // Silme onay sayfasını gösterir.
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -128,21 +208,31 @@ namespace BlogYonetimPaneli.Controllers
 
             if (post == null) return NotFound();
 
+            var currentUserId = _userManager.GetUserId(User);
+            if (post.AuthorId != currentUserId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
             return View(post);
         }
 
         // POST: Posts/Delete/5
-        // Onay sonrası gerçek silme işlemini gerçekleştirir.
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var post = await _context.Posts.FindAsync(id);
-            if (post != null)
+            if (post == null) return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+            if (post.AuthorId != currentUserId && !User.IsInRole("Admin"))
             {
-                _context.Posts.Remove(post);
-                await _context.SaveChangesAsync();
+                return Forbid();
             }
+
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
     }

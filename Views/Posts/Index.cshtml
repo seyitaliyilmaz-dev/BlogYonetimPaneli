@@ -1,8 +1,11 @@
-@* Tüm blog yazılarını, kategorileriyle ve yayın durumlarıyla birlikte listeler. *@
+@* Tüm blog yazılarını, kategorileriyle, yazarıyla ve yayın durumlarıyla listeler. *@
 @model IEnumerable<BlogYonetimPaneli.Models.Post>
 
 @{
     ViewData["Title"] = "Blog Yazıları";
+    var authors = (Dictionary<string, string?>)ViewData["Authors"]!;
+    var currentUserId = ViewData["CurrentUserId"] as string;
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <p>
@@ -14,6 +17,7 @@
         <tr>
             <th>Başlık</th>
             <th>Kategori</th>
+            <th>Oluşturan</th>
             <th>Durum</th>
             <th>Oluşturulma Tarihi</th>
             <th></th>
@@ -22,12 +26,16 @@
     <tbody>
 @foreach (var item in Model)
 {
+        @* Bu yazının sahibi mi yoksa Admin mi kontrol edilip, düzenle/sil linkleri
+           sadece o durumda gösteriliyor. Başkasının yazısında bu linkler görünmez. *@
+        var isOwnerOrAdmin = isAdmin || (item.AuthorId != null && item.AuthorId == currentUserId);
+        var authorEmail = (item.AuthorId != null && authors.ContainsKey(item.AuthorId)) ? authors[item.AuthorId] : "Bilinmiyor";
+
         <tr>
             <td>@item.Title</td>
-            @* item.Category, PostsController'da Include(p => p.Category) ile yüklendiği için burada doludur. *@
             <td>@item.Category?.Name</td>
+            <td>@authorEmail</td>
             <td>
-                @* IsPublished durumuna göre farklı bir "damga" rozeti gösterilir. *@
                 @if (item.IsPublished)
                 {
                     <span class="stamp stamp--live">Yayında</span>
@@ -39,9 +47,11 @@
             </td>
             <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Düzenle</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Detay</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Sil</a>
+                <a asp-action="Details" asp-route-id="@item.Id">Detay</a>
+                @if (isOwnerOrAdmin)
+                {
+                    <text> | <a asp-action="Edit" asp-route-id="@item.Id">Düzenle</a> | <a asp-action="Delete" asp-route-id="@item.Id">Sil</a></text>
+                }
             </td>
         </tr>
 }

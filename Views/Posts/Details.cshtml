@@ -4,14 +4,17 @@
 
 @{
     ViewData["Title"] = "Yazı Detay";
+    var isAdmin = User.IsInRole("Admin");
+    var currentUserId = ViewData["CurrentUserId"] as string;
+    var isOwnerOrAdmin = isAdmin || (Model.AuthorId != null && Model.AuthorId == currentUserId);
 }
 
 <h1>@Model.Title</h1>
 
 <p>
     <strong>Kategori:</strong> @Model.Category?.Name <br />
+    <strong>Yazar:</strong> @(ViewData["AuthorEmail"] ?? "Bilinmiyor") <br />
     <strong>Oluşturulma:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm") <br />
-    @* UpdatedAt sadece yazı en az bir kez düzenlendiyse gösterilir. *@
     @if (Model.UpdatedAt != null)
     {
         <text><strong>Güncellenme:</strong> @Model.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm") <br /></text>
@@ -22,12 +25,15 @@
 <hr />
 
 <div>
-    @* MarkdownHelper.ToHtml, veritabanındaki Markdown metnini HTML'e çevirir.
-       Html.Raw, bu HTML'in kaçışlanmadan (escape edilmeden) doğrudan sayfaya basılmasını sağlar. *@
     @Html.Raw(MarkdownHelper.ToHtml(Model.Content))
 </div>
 
 <hr />
 
-<a asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a> |
+@* @if bloğu içinde HTML'den sonra düz metin ("|") geldiğinde Razor'un
+   bunu kodla karıştırmaması için <text> ile sarmak gerekiyor. *@
+@if (isOwnerOrAdmin)
+{
+    <text><a asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a> | </text>
+}
 <a asp-action="Index">Listeye Dön</a>

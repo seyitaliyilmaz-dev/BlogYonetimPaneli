@@ -1,15 +1,16 @@
 @* Bu view, veritabanındaki tüm kategorileri tablo halinde listeler. *@
-@* Model olarak Category listesi (IEnumerable) bekler. *@
 @model IEnumerable<BlogYonetimPaneli.Models.Category>
 
 @{
     ViewData["Title"] = "Kategoriler";
 }
 
-@* Yeni kategori ekleme sayfasına yönlendiren buton *@
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Kategori</a>
-</p>
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Yeni Kategori</a>
+    </p>
+}
 
 <table class="table">
     <thead>
@@ -20,17 +21,17 @@
         </tr>
     </thead>
     <tbody>
-@* Model içindeki her kategori için bir satır oluşturulur. *@
 @foreach (var item in Model)
 {
         <tr>
             <td>@item.Name</td>
             <td>@item.Description</td>
             <td>
-                @* asp-route-id, controller'daki id parametresine ilgili kategorinin Id'sini gönderir. *@
-                <a asp-action="Edit" asp-route-id="@item.Id">Düzenle</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Detay</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Sil</a>
+                <a asp-action="Details" asp-route-id="@item.Id">Detay</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <text> | <a asp-action="Edit" asp-route-id="@item.Id">Düzenle</a> | <a asp-action="Delete" asp-route-id="@item.Id">Sil</a></text>
+                }
             </td>
         </tr>
 }
